@@ -5,6 +5,7 @@
     <title>Simulador de Ônibus com Leaflet</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         #map {
@@ -18,7 +19,13 @@
     <div id="message"></div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-    const coordenadas = [
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('Service Worker registrado com sucesso.'))
+                .catch((error) => console.log('Falha ao registrar o Service Worker:', error));
+        }
+
+        const coordenadas = [
             [-23.58145, -48.03186],
             [-23.58184, -48.03173],
             [-23.58181, -48.03152],
