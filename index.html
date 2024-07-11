@@ -18,9 +18,7 @@
     <div id="message"></div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-
-
-        const coordenadas = [
+    const coordenadas = [
             [-23.58145, -48.03186],
             [-23.58184, -48.03173],
             [-23.58181, -48.03152],
@@ -1064,29 +1062,21 @@
         ];
 
 
-        // Coordenadas do proximidade fixo (exemplo: posição do passageiro)
         var latFixo = -23.593798331228253;
         var lonFixo = -48.01770304206565;
-
-        // Coordenadas do proximidade de ônibus
         var proximidadeOnibus = { 'lat': -23.59468, 'lon': -48.01904 }
 
-        // Inicializar o mapa
         const map = L.map('map').setView(coordenadas[0], 15);
 
-        // Adicionar a camada de mapa
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Adicionando marcador para o proximidade fixo (passageiro)
         var markerFixo = L.marker([latFixo, lonFixo]).addTo(map)
             .bindPopup('Posição do Passageiro');
 
-        // Adicionar o marcador do ônibus
         const busMarker = L.marker(coordenadas[0]).addTo(map);
 
-        // Função para mover o ônibus pelas coordenadas
         let index = 0;
 
         function moveBus() {
@@ -1094,7 +1084,7 @@
                 const [lat1, lon1] = coordenadas[index];
                 const [lat2, lon2] = coordenadas[index + 1];
                 const distance = map.distance([lat1, lon1], [lat2, lon2]);
-                const duration = (distance / 50) * 1000; // Velocidade do ônibus: 50 m/s
+                const duration = (distance / 50) * 1000;
 
                 busMarker.setLatLng([lat1, lon1]);
                 const animation = L.DomUtil.create('div', 'leaflet-zoom-animated');
@@ -1104,22 +1094,17 @@
                     L.DomUtil.setPosition(animation, map.latLngToLayerPoint([lat2, lon2]));
                     busMarker.setLatLng([lat2, lon2]);
                     map.panTo([lat2, lon2]);
-
-
                 }, null, false, duration);
 
-                //atualizar a mensagem de distância
                 updateDistance(lat2, lon2);
-
 
                 index++;
                 setTimeout(moveBus, duration);
             }
         }
 
-        // Função para calcular a distância entre dois proximidades usando Haversine
         function calcularDistancia(lat1, lon1, lat2, lon2) {
-            var R = 6371000; // Raio da Terra em metros
+            var R = 6371000;
             var φ1 = lat1 * Math.PI / 180;
             var φ2 = lat2 * Math.PI / 180;
             var Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -1133,96 +1118,35 @@
             var distancia = R * c;
             return distancia;
         }
-        /*
-                // Função para atualizar a mensagem de distância
-                function updateDistance(lat2, lon2) {
-                    var latBus = lat2;
-                    var lonBus = lon2;
-        
-                    var distancia = calcularDistancia(latFixo, lonFixo, latBus, lonBus);
-        
-                    var message = document.getElementById('message');
-        
-                    if (distancia <= 1000) {
-                        message.innerHTML = "O ônibus está a 1 km ou menos da posição do passageiro.";
-                    } else {
-                        message.innerHTML = "O ônibus está a mais de 1 km da posição do passageiro.";
-                    }
-                }
-        
-               */
 
-        // Função para atualizar a mensagem de distância e enviar notificação
-        /*
-        function updateDistance(lat2, lon2) {
-            var latBus = lat2;
-            var lonBus = lon2;
-
-            var distancia = calcularDistancia(latFixo, lonFixo, latBus, lonBus);
-
-            var message = document.getElementById('message');
-
-            if (distancia <= 1000) {
-                message.innerHTML = "O ônibus está a 1 km ou menos da posição do passageiro.";
-                // Verifica se o navegador suporta notificações
-                if ('Notification' in window) {
-                    // Solicita permissão para enviar notificações
-                    Notification.requestPermission().then(function (permission) {
-                        if (permission === 'granted') {
-                            // Cria e exibe a notificação
-                            var notification = new Notification('Ônibus Próximo', {
-                                body: 'O ônibus está a 1 km ou menos da sua posição.'
-                            });
-                        }
-                    });
-                }
-            } else {
-                message.innerHTML = "O ônibus está a mais de 1 km da posição do passageiro.";
-            }
-        }
-
-*/
-
-        // Variáveis para controlar a posição anterior do ônibus e o estado do proximidade
         var posicaoAnterior = null;
         var passouPeloPonto = false;
         var proximidade = false;
 
-
-        // Função para atualizar a mensagem de distância e enviar notificação
         function updateDistance(lat2, lon2) {
             var latBus = lat2;
             var lonBus = lon2;
 
-
-
-            // Verifica se já há uma posição anterior registrada
             if (posicaoAnterior === null) {
                 posicaoAnterior = { lat: latBus, lon: lonBus };
-                return; // Não faz nada na primeira execução
+                return;
             }
 
-            // Calcula a distância percorrida desde a última verificação
             var distanciaPercorrida = calcularDistancia(posicaoAnterior.lat, posicaoAnterior.lon, latBus, lonBus);
-
-            // Calcula a distância entre o ônibus e o proximidade de ônibus
-            distanciaproximidadeOnibus = calcularDistancia(proximidadeOnibus.lat, proximidadeOnibus.lon, latBus, lonBus);
+            var distanciaproximidadeOnibus = calcularDistancia(proximidadeOnibus.lat, proximidadeOnibus.lon, latBus, lonBus);
             console.log('A distância do ônibus em relação ao proximidade de ônibos é: ' + distanciaproximidadeOnibus);
 
-            // Calcula a distância atual do ônibus ao proximidade do passageiro
             var distancia = calcularDistancia(latFixo, lonFixo, latBus, lonBus);
-            var distanciaArredondada = Math.floor(distancia); // Arredonda para baixo para remover casas decimais
+            var distanciaArredondada = Math.floor(distancia);
 
             var message = document.getElementById('message');
 
-            // Verifica se a distância é menor ou igual a 200 metros e se proximidade é false
             if (distanciaArredondada <= 200 && !passouPeloPonto) {
                 message.innerHTML = "O ônibus está a 200 metros ou menos da posição do passageiro.";
             }
 
             console.log(distanciaArredondada, distanciaPercorrida);
 
-            // condição proximidade de ônibus
             if (distanciaproximidadeOnibus < 50) {
                 message.innerHTML = "O ônibus está no ponto de ônibus.";
                 if ('Notification' in window && !passouPeloPonto) {
@@ -1234,17 +1158,13 @@
                         }
                     });
                 }
-                passouPeloPonto = true; // Marca que o ônibus passou próximo ao proximidade do passageiro
-                return; // Encerra a função aqui para não continuar mostrando ou notificando
+                passouPeloPonto = true;
+                return;
             }
 
-            // Verifica se a distância é menor ou igual a 3000 metros e proximidade é false
             if (distanciaArredondada <= 3000 && !proximidade && !passouPeloPonto) {
-                // Verifica se o ônibus se moveu pelo menos 500 metros desde a última notificação
                 if (distanciaPercorrida >= 500) {
-                    // Atualiza a posição anterior para a atual
                     posicaoAnterior = { lat: latBus, lon: lonBus };
-                    // Envia a notificação
                     if ('Notification' in window) {
                         Notification.requestPermission().then(function (permission) {
                             if (permission === 'granted') {
@@ -1255,14 +1175,10 @@
                         });
                     }
                 }
-
-                // Define a mensagem padrão de distância
                 message.innerHTML = "O ônibus está a " + distanciaArredondada + " metros da posição do passageiro.";
-            }
-            else if (distanciaproximidadeOnibus > 50 && distanciaproximidadeOnibus <= 100) {
+            } else if (distanciaproximidadeOnibus > 50 && distanciaproximidadeOnibus <= 100) {
                 message.innerHTML = "O ônibus já passou pelo ponto de ônibus.";
                 posicaoAnterior = { lat: latBus, lon: lonBus };
-                // Envia a notificação
                 if ('Notification' in window) {
                     Notification.requestPermission().then(function (permission) {
                         if (permission === 'granted') {
@@ -1273,19 +1189,17 @@
                     });
                 }
                 proximidade = false;
-            }
-
-            else if (distanciaArredondada > 200 && passouPeloPonto) {
+            } else if (distanciaArredondada > 200 && passouPeloPonto) {
                 message.innerHTML = 'O ônibus está a mais de ' + distanciaArredondada + ' km da posição do passageiro.';
             }
         }
 
+        Notification.requestPermission().then(function (permission) {
+            if (permission !== 'granted') {
+                alert('Por favor, permita notificações para receber alertas sobre a posição do ônibus.');
+            }
+        });
 
-
-
-
-
-        // Iniciar o movimento do ônibus
         moveBus();
     </script>
 </body>
